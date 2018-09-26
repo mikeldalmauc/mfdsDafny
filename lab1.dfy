@@ -1,6 +1,7 @@
 function exp(x:int, e:int):int
 	requires e >= 0
     decreases e
+   // ensures x >= 1 ==> exp(x,e) >= 1
 {
 if e == 0 then 1 else x*exp(x,e-1)
 }
@@ -109,6 +110,10 @@ function factorial (n:int):int
     if n == 0 then 1 else n*factorial(n-1)
 }
 
+/**
+    CLASE 4 
+
+ */
 lemma {:induction false} factorial_Lemma(n:int)
     requires n >= 1
     decreases  n
@@ -133,8 +138,94 @@ lemma {:induction false}base_Lemma(x:int, y:int, e:int)
     if e != 0 {
         base_Lemma(x,y,e-1);
         assert exp(x,e-1) <= exp (y,e-1); // HI
-        assert exp(x,e) == x*exp(x,e-1);
-        assert exp(y,e) == y*exp(y,e-1);
-        assert exp(x, e-1) <= (y/x)*exp(y,e-1);
+        assert forall x, e :: e>= 0 && x >= 1 ==> exp(x,e) >= 1;
+        //assert x*exp(x,e-1) <= y*exp(y,e-1);
+    }
+}
+
+predicate even(n:nat)
+{
+    n%2 == 0
+}
+
+function sumDigits(x:nat):nat
+{
+    if x < 10 then x else x % 10 + sumDigits(x/10)
+}
+
+lemma Div11_Lemma(n:nat)
+    requires n >= 11 && n % 11 == 0
+    ensures even(sumDigits(n))
+{
+    if n > 11 {
+        var k := n / 11;
+        calc{
+            sumDigits(n);
+            == 
+            sumDigits(11*(k-1)+11);
+            == {commutes_Lemma(11*(k-1),11);}
+            sumDigits(11*(k-1)) + sumDigits(11);
+            ==
+            sumDigits(11*(k-1)) + 2;
+        }
+        Div11_Lemma(11 * (k-1));//Hipotesis de induccion
+        //assert Div11_Lemma(11*k) = sumDigits( Div11_Lemma(11 * (k-1))) + sumDigits(11);
+    }
+}
+
+lemma commutes_Lemma(a:nat, b:nat)
+    ensures sumDigits(a+b) == sumDigits(a) + sumDigits(b)
+// Este lemma es falso
+
+lemma factoria_exp3_Lemma(n:int)
+requires n >=7
+ensures exp(3,n) < factorial (n)
+{
+    if n == 7 {
+       // assert exp(3,7) < factorial(7);
+    } else {
+        factoria_exp3_Lemma(n-1);
+        assert exp(3,n-1) <= factorial(n-1);
+        assert forall n :: n >= 0 ==> factorial(n) >= 1;
+        //product_Lemma(3, n, factorial(n-1));
+        assert forall a,b,c:: 1 <= a < b && c >= 1 ==> a*c < b*c;
+        assert 3*exp(3,n-1) <  3*factorial(n-1) <  n*factorial(n-1);
+    }
+}
+
+lemma product_Lemma (a:int, b:int, c:int)
+requires 1 <= a < b && c >= 1
+ensures a*c < b*c
+{}
+
+lemma exp2n_Lemma(n:int)
+    requires n >= 1
+    ensures factorial(2*n) < exp(2,2*n)*exp(factorial(n),2)
+{
+    if n != 1 {
+        calc {
+            factorial(2*n);
+            ==
+            2*n*(2*n-1)*factorial(2*n-2);
+            < {exp2n_Lemma(n-1);}
+            2*n*(2*n-1)*exp(2,2*(n-1))*exp(factorial(n-1),2);
+            ==
+            2*n*(2*n-1)*exp(2,2*(n-1))*factorial(n-1)*factorial(n-1);
+            ==
+            (2*n-1)*exp(2,2*n-1)*factorial(n)*factorial(n-1);
+            ==
+            n*exp(2,2*n)*factorial(n)*factorial(n-1)
+            -exp(2,2*n-1)*factorial(n)*factorial(n-1);
+            ==
+             exp(2,2*n)*factorial(n)*factorial(n)
+            - (exp(2,2*n-1)*factorial(n)*factorial(n-1));
+            ==
+             exp(2,2*n)*exp(factorial(n),2)
+            - (exp(2,2*n-1)*factorial(n)*factorial(n-1));
+            < {assert forall x:: x>=0 ==> factorial(x) >= 1;
+                assume exp(factorial(n),2) == factorial(n)*factorial(n);
+            }
+            exp(2,2*n)*exp(factorial(n),2);
+        }
     }
 }
