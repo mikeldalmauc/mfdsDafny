@@ -198,7 +198,7 @@ requires 1 <= a < b && c >= 1
 ensures a*c < b*c
 {}
 
-lemma exp2n_Lemma(n:int)
+/* lemma exp2n_Lemma(n:int)
     requires n >= 1
     ensures factorial(2*n) < exp(2,2*n)*exp(factorial(n),2)
 {
@@ -228,4 +228,4 @@ lemma exp2n_Lemma(n:int)
             exp(2,2*n)*exp(factorial(n),2);
         }
     }
-}
+} */
