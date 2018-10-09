@@ -193,8 +193,148 @@ method Square (a:int) returns (x:int)
 	Lemma_Square(a);
 }
 
+lemma Lemma_Square2(n:int)
+	requires n >= 0
+	ensures sumSerie2(n) == n*n
+	{}
+
+function sumSerie2(n:int):int
+	decreases n
+	requires n>=0
+	{
+		if n <= 1 then n else 2*n - 1 + sumSerie2(n-1)
+	}
 
 
+method Square2 (a:int) returns (x:int)
+	requires a >= 1
+	ensures x == sumSerie2(a)
+{
+	x := 0;
+	var y := 0;
+	while  y < a
+		invariant 0 <= y <= a
+		invariant x == sumSerie2(y)
+		{
+			y := y + 1;
+			x := x + 2*y - 1;
+		}
+	assert x == sumSerie2(a);
+	Lemma_Square2(a);
+	assert x == a*a;
+}
 
+method Square3(a:int) returns (x:int)
+	requires a >= 1
+	ensures x == a*a
+	{
+		x := 1;
+		var y  := 2;
+		while y <= a
+			invariant 0 <= y <= a+1
+			invariant x == sumSerie(y-1)
+		{
+			x := x + 2*y -1;
+			y := y + 1;
+		}
+		Lemma_Square(a);
+	}
 
+method computeFactTuring(n:int) returns (u:int)
+	requires n >= 1
+	ensures u == fact(n)
+	{
+		var r := 1;
+		u := 1;
+		while r < n
+		 invariant 1 <= r <= n
+		 invariant u == fact(r)
+		{
+			var v := u;
+			var i := 1;
+			while i < r + 1
+				invariant 0 <= i <= r +1
+				invariant u == i*fact(r)
+			{
+				u,i := v + u, i + 1;
+			}
+			r := r + 1;
+		}
+	}
 
+method sig_fact(r:int, u:int) returns (v:int)
+	requires r >= 0 && u == fact(r)
+	ensures v == fact(r+1)
+{
+	v := u;
+	var i := 1;
+	while i < r + 1
+		invariant 0 <= i <= r +1
+		invariant v == i*fact(r)
+	{
+		assert 1 <= i+1 <= r+1 && v+u == (i+1)*fact(r);
+		v,i := v + u, i + 1;
+		assert 1 <= i <= r+1 && v == i * fact (r);
+	}
+}
+
+function power(b:int,e:int):int
+requires e>=0;
+{
+	if e == 0 then 1 else b * power(b,e-1)
+}
+
+lemma even_Lemma(base:int, exp:int)
+requires exp%2 == 0 && exp >= 0
+ensures power(base,exp) == power(base*base,exp/2)
+{
+	if exp == 0 {
+
+	}else{
+		even_Lemma(base,exp-2);
+	}
+} // TODO hacer a mano la demostracción por inducción de este lemma con menos 2
+
+method computePower(b:int, e:int) returns (p:int)
+	requires e >= 0 
+	ensures p == power(b,e)
+{
+	var t, x := e, b;
+	p := 1;
+	while t > 0
+	invariant 0 <= t <= e
+	invariant p* power(x,t) == power(b,e)
+	{
+		if t % 2 == 0 {
+			even_Lemma(x,t);
+		//assert p * power(x*x, t/2) == power(b,e);
+			x , t := x*x, t/2;
+		} else {
+			//assert p * x * power(x,t-1) == power(b,e);
+			p, t := p*x, t-1;
+		}
+	}
+}
+
+method computePowerRec(b:int, e:int) returns (p:int)
+	requires e >= 0
+	ensures p == power(b,e)
+	decreases e
+	{
+		if e == 0 {
+			p:= 1;
+		} else if e % 2 == 0 {
+			even_Lemma(b,e);
+			p := computePowerRec(b*b,e/2);
+		} else {
+			var k :=computePowerRec(b,e-1);
+			p := b*k;
+		}
+	}
+
+method factorialRaro(n:int) returns (f:int)
+	requires n>= 1 
+	ensures f == fact(n)
+	{
+		// var i f * fact(n-i-1) = fact(n)
+	}
