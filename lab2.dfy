@@ -73,7 +73,6 @@ while x <= n
 		 assert f == fact(x); 
 	x := x + 1;
 	}
-
 }
 
 
