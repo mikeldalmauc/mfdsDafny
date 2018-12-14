@@ -122,12 +122,12 @@ lemma {:induction s} seqMultiset_Lemma<T> (s:seq<T>)
 
 // Exercise 5: Construct a proof by contradiction of the following lemma
 
-lemma ItsOwnInverse_Lemma<T> (s:seq<T>)
+lemma {:induction s} ItsOwnInverse_Lemma<T> (s:seq<T>)
 	ensures s == reverse(reverse(s))
 {
     if s != reverse(reverse(s))
     {
-        calc{
+        calc ==> {
             //assert |reverse(reverse(s))| == |s|;
             exists i :: 0 <= i < |s| && s[i] != reverse(reverse(s))[i]; 
             ==> {Rev_Lemma(s);}

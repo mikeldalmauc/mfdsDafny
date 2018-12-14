@@ -74,6 +74,7 @@ reverse_length_Lemma<T> (s:seq<T>)
 
 // Definir recursivamente una función que convierta una secuencia en el conjunto de sus elementos
 function seq2set<T> (s:seq<T>):set<T>
+    decreases s
 {
     if s == [] then {} else {s[0]} + seq2set(s[1..])
 }
